@@ -16,7 +16,8 @@ class hokuyo3d_compensate_node
 				nh.param("phase_shift" + num, s.phase_shift, 0.0);
 				nh.param("amp_mul" + num, s.amp_mul, 1.0);
 				nh.param("range_offset" + num, s.range_offset, 0.0);
-				nh.param("gain" + num, s.gain, 1.0);
+				nh.param("gain_amp" + num, s.gain_amp, 1.0);
+				nh.param("gain_phase" + num, s.gain_phase, 1.0);
 				std::string mode;
 				nh.param("mode" + num, mode, std::string("auto"));
 				if(mode.compare("auto") == 0)
@@ -48,7 +49,8 @@ class hokuyo3d_compensate_node
 			int *cnt;
 			comp_mode mode;
 			float range_offset;
-			float gain;
+			float gain_amp;
+			float gain_phase;
 			bool found = false;
 			for(auto &s: sensors)
 			{
@@ -59,7 +61,8 @@ class hokuyo3d_compensate_node
 					cnt = &s.cnt;
 					range_offset = s.range_offset;
 					mode = s.mode;
-					gain = s.gain;
+					gain_amp = s.gain_amp;
+					gain_phase = s.gain_phase;
 					found = true;
 					break;
 				}
@@ -162,8 +165,11 @@ class hokuyo3d_compensate_node
 			float err = z_up - z_down;
 			if(mode == comp_mode::AUTO)
 			{
-				*phase_shift -= err * 0.1 * gain;
-				*amp_mul += (z_d - 0.05) * 0.025 * gain;
+				if(std::isfinite(err) && std::isfinite(z_d))
+				{
+					*phase_shift -= err * 0.1 * gain_phase;
+					*amp_mul += (z_d - 0.05) * 0.025 * gain_amp;
+				}
 				
 				if((*cnt)++ % 128 == 0)
 				{
@@ -188,7 +194,8 @@ class hokuyo3d_compensate_node
 			double phase_shift;
 			double amp_mul;
 			double range_offset;
-			double gain;
+			double gain_amp;
+			double gain_phase;
 			int cnt;
 			comp_mode mode;
 		};
