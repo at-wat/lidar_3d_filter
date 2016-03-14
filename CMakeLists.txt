@@ -25,3 +25,6 @@ include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_executable(hokuyo3d_compensate src/hokuyo3d_compensate.cpp)
 target_link_libraries(hokuyo3d_compensate ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(reduce_veil src/reduce_veil.cpp)
+target_link_libraries(reduce_veil ${catkin_LIBRARIES} ${Boost_LIBRARIES})
