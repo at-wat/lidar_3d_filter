@@ -9,8 +9,10 @@ class reduce_veil_node
 		{
 			sub_pc = nh.subscribe("cloud_in", 1, &reduce_veil_node::cb_cloud, this);
 			pub_pc = nh.advertise<sensor_msgs::PointCloud2>("cloud_out", 1, true);
+			nh.param("ang_lim", ang_lim, 0.1);
 		}
 	private:
+		double ang_lim;
 		void cb_cloud(const sensor_msgs::PointCloud2::Ptr &msg)
 		{
 			std::vector<size_t> indices;
@@ -34,8 +36,9 @@ class reduce_veil_node
 					float r0 = sqrtf(powf(v0[0], 2) + powf(v0[1], 2) + powf(v0[2], 2));
 					float r1 = sqrtf(powf(v1[0], 2) + powf(v1[1], 2) + powf(v1[2], 2));
 					float dot = v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2];
-					float ang = acosf(dot / (r0 + r1));
-					if(fabs(ang) > 0.01)
+					float ang = acosf(dot / (r0 * r1));
+					if(ang > M_PI / 2) ang -= M_PI;
+					if(fabs(ang) > ang_lim)
 					{
 						indices.push_back(j);
 					}
@@ -53,11 +56,12 @@ class reduce_veil_node
 			pc.row_step = msg->row_step;
 			pc.header = msg->header;
 			pc.width = indices.size();
-			pc.data.reserve(pc.width * pc.point_step);
+			pc.height = 1;
+			pc.data.resize(pc.width * pc.point_step);
 			float *data2 = reinterpret_cast<float*>(&pc.data[0]);
 			for(auto &i: indices)
 			{
-				auto data = &msg->data[i * pc.point_step];
+				float *data = reinterpret_cast<float*>(&msg->data[0] + i * pc.point_step);
 				*(data2++) = *(data++);
 				*(data2++) = *(data++);
 				*(data2++) = *(data++);
