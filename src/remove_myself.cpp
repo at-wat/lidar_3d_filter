@@ -20,7 +20,9 @@ class remove_myself_node
 			nh.param("range", range, 0.5);
 			nh.param("z_max", z_max, 100.0);
 			nh.param("z_min", z_min, 0.15);
-			nh.param("expand", expand, 2);
+			nh.param("yaw_expand", yaw_expand, 1);
+			nh.param("pitch_expand_pos", pitch_expand_pos, 1);
+			nh.param("pitch_expand_neg", pitch_expand_neg, 1);
 			nh.param("generate_mask", generate_mask, false);
 			nh.param("mask_file", mask_file, std::string(""));
 
@@ -160,9 +162,9 @@ class remove_myself_node
 					if(r3 < range &&
 							z_min < z && z < z_max)
 					{
-						for(int i = -expand; i <= expand; i ++)
+						for(int i = -yaw_expand; i <= yaw_expand; i ++)
 						{
-							for(int j = -expand; j <= expand; j ++)
+							for(int j = -pitch_expand_neg; j <= pitch_expand_pos; j ++)
 							{
 								int iyaw2 = iyaw + i;
 								int ipitch2 = ipitch + j;
@@ -202,7 +204,9 @@ class remove_myself_node
 		ros::Subscriber sub_pc;
 		float ang_res;
 		int width;
-		int expand;
+		int yaw_expand;
+		int pitch_expand_pos;
+		int pitch_expand_neg;
 		int width_step;
 		double range;
 		double z_min;
