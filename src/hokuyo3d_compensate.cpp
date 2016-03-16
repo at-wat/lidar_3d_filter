@@ -15,6 +15,7 @@ class hokuyo3d_compensate_node
 				nh.param("frame_id" + num, s.frame_id, std::string(""));
 				nh.param("phase_shift" + num, s.phase_shift, 0.0);
 				nh.param("amp_mul" + num, s.amp_mul, 1.0);
+				nh.param("range_mul" + num, s.range_mul, 1.0);
 				nh.param("range_offset" + num, s.range_offset, 0.0);
 				nh.param("gain_amp" + num, s.gain_amp, 1.0);
 				nh.param("gain_phase" + num, s.gain_phase, 1.0);
@@ -24,6 +25,8 @@ class hokuyo3d_compensate_node
 					s.mode = comp_mode::AUTO;
 				else if(mode.compare("manual") == 0)
 					s.mode = comp_mode::MANUAL;
+				else if(mode.compare("auto_phase") == 0)
+					s.mode = comp_mode::AUTO_PHASE;
 				else
 				{
 					ROS_ERROR("unknown hokuyo3d compensate mode (auto or manual)");
@@ -49,6 +52,7 @@ class hokuyo3d_compensate_node
 			int *cnt;
 			comp_mode mode;
 			float range_offset;
+			float range_mul;
 			float gain_amp;
 			float gain_phase;
 			bool found = false;
@@ -60,6 +64,7 @@ class hokuyo3d_compensate_node
 					amp_mul = &s.amp_mul;
 					cnt = &s.cnt;
 					range_offset = s.range_offset;
+					range_mul = s.range_mul;
 					mode = s.mode;
 					gain_amp = s.gain_amp;
 					gain_phase = s.gain_phase;
@@ -131,7 +136,7 @@ class hokuyo3d_compensate_node
 
 				float pitch2 = sinf(rem_phase + (*phase_shift)) * (*amp_mul)
 				   	* (M_PI*20.0/180.0) + M_PI/12.0;
-				z = sinf(pitch2) * (r + range_offset);
+				z = sinf(pitch2) * (r * range_mul + range_offset);
 
 				if(r2 > 1.0)
 				{
@@ -163,12 +168,13 @@ class hokuyo3d_compensate_node
 			z_down /= z_down_num;
 			z_d /= z_d_num;
 			float err = z_up - z_down;
-			if(mode == comp_mode::AUTO)
+			if(mode != comp_mode::MANUAL)
 			{
 				if(std::isfinite(err) && std::isfinite(z_d))
 				{
 					*phase_shift -= err * 0.1 * gain_phase;
-					*amp_mul += (z_d - 0.05) * 0.025 * gain_amp;
+					if(mode == comp_mode::AUTO)
+						*amp_mul += (z_d - 0.05) * 0.025 * gain_amp;
 				}
 				
 				if((*cnt)++ % 128 == 0)
@@ -186,6 +192,7 @@ class hokuyo3d_compensate_node
 
 		enum comp_mode{
 			AUTO,
+			AUTO_PHASE,
 			MANUAL
 		};
 		class sensor{
@@ -193,6 +200,7 @@ class hokuyo3d_compensate_node
 			std::string frame_id;
 			double phase_shift;
 			double amp_mul;
+			double range_mul;
 			double range_offset;
 			double gain_amp;
 			double gain_phase;
