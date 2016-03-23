@@ -132,7 +132,7 @@ class remove_myself_node
 				const float &z = p[2];
 
 				float r = hypotf(y, x);
-				if(r < 0.3)
+				if(x < 0.1 && fabs(y) < 0.3)
 				{
 					p += msg->point_step / sizeof(float);
 					continue;
