@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>lidar_3d_filter</name>
+  <version>0.0.0</version>
+  <description>The lidar_3d_filter meta-package</description>
+
+  <maintainer email="atsushi.w@ieee.org">Atsushi Watanabe</maintainer>
+  <license>BSD</license>
+  <author email="atsushi.w@ieee.org">Atsushi Watanabe</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <run_depend>hokuyo3d_compensate</run_depend>
+  <run_depend>remove_myself</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
